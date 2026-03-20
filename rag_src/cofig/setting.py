@@ -9,7 +9,11 @@ class Settings:
     K = 5
 
     EMBEDDINGS_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+    
     RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    
+    CHAT_MODEL = "llama3:8b"
+    TEMEPERATURE = 0.2
 
     VECTOR_DB_PATH = "vectorstore/faiss_store"
 

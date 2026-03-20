@@ -6,7 +6,7 @@ class MLFlowTracker:
         mlflow.set_experiment(experiment_name=experiment_name)
 
     def __enter__(self):
-        self.run = mlflow.start_run()
+        self.run = mlflow.start_run(nested=True)
         return self
     
     def log_params(self, params: dict):
