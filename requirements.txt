@@ -1,0 +1,10 @@
+mlflow
+langchain
+langchain-core
+langchain-community
+pymupdf
+langchain-text-splitters
+langchain-huggingface
+faiss-cpu
+
+# -e .
