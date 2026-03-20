@@ -6,5 +6,6 @@ pymupdf
 langchain-text-splitters
 langchain-huggingface
 faiss-cpu
+sentence-transformers
 
 # -e .

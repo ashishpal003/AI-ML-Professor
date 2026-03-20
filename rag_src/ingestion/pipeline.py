@@ -63,5 +63,5 @@ class IngestionPipeline:
                 logger.info("Ingestion completed successfully")
 
         except Exception as e:
-            logger.error(f"Pipeline failed: {e}", exc_info=True)
+            logger.critical(f"Pipeline failed: {e}", exc_info=True)
             raise MyException(e, sys)
