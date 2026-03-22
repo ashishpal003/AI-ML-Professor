@@ -18,3 +18,7 @@ class Settings:
     VECTOR_DB_PATH = "vectorstore/faiss_store"
 
     MLFLOW_EXPERIMENT = "rag_ingestion"
+
+    SEMANTIC_THRESHOLD = 0.85
+
+    EVAL_PROBABILITY = 0.25 # 25% of requests
