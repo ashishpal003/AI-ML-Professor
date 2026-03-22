@@ -1,6 +1,7 @@
 from rag_src.cofig.setting import Settings
 from rag_src.ingestion.pipeline import IngestionPipeline
 from rag_src.retrieval.pipeline import RetrievalPipeline
+
 from rag_src.generation.pipeline import RAGPipeline
 
 if __name__ == "__main__":

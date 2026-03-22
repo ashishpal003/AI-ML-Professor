@@ -11,5 +11,6 @@ langchain-ollama
 ollama
 litellm
 deepeval
+fastapi
 
 # -e .

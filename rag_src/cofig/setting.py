@@ -21,4 +21,4 @@ class Settings:
 
     SEMANTIC_THRESHOLD = 0.85
 
-    EVAL_PROBABILITY = 0.25 # 25% of requests
+    EVAL_PROBABILITY = 0.5 # 25% of requests

@@ -52,3 +52,4 @@ class DeepEvalEvaluator:
                 "faithfulness": 0.0,
                 "answer_relevancy": 0.0
             }
+            

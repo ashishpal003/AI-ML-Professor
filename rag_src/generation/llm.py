@@ -36,3 +36,25 @@ class LLMService:
         except Exception as e:
             logger.error(f"LLM generation failed: {e}")
             raise MyException(e, sys)
+        
+    async def agenerate(self, messages: list) -> str:
+        try:
+            logger.info("Invoking ChatOllama")
+
+            response = await self.llm.ainvoke(messages)
+
+            if not response or not response.content:
+                raise ValueError("Emplty response from LLM")
+            
+            return response.content
+        
+        except Exception as e:
+            logger.error(f"LLM generation failed: {e}")
+            raise MyException(e, sys)
+        
+    async def astream(self, messages: str):
+        """
+        Stream tokens from LLM
+        """
+        async for chunk in self.llm.astream(messages):
+            yield chunk
