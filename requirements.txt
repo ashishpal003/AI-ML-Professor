@@ -12,5 +12,6 @@ ollama
 litellm
 deepeval
 fastapi
+streamlit
 
 # -e .

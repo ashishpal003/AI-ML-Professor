@@ -7,6 +7,7 @@ class Settings:
     CHUNK_OVERLAP = 100
     MIN_CHUNK_LENGTH = 50
     K = 5
+    CACHE_TTL = 600
 
     EMBEDDINGS_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
     

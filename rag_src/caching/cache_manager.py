@@ -1,6 +1,8 @@
 from rag_src.caching.semantic_cache import SemanticCache
 from rag_src.caching.retrieval_cache import RetrievalCache
 
+from rag_src.caching.redis_client import RedisClient
+
 from rag_src.cofig.setting import Settings
 from rag_src.utils.logger import get_logger
 from rag_src.utils.exceptions import MyException
@@ -14,7 +16,10 @@ class CacheManager:
         try:
             self.settings = settings
             self.semantic_cache = SemanticCache(model_name=self.settings.EMBEDDINGS_MODEL, threshold=self.settings.SEMANTIC_THRESHOLD)
-            self.retrieval_cahce = RetrievalCache()
+            # self.retrieval_cahce = RetrievalCache()
+
+            self.redis = RedisClient()
+            self.retrieval_cahce = RetrievalCache(self.redis)
 
             logger.info("CacheManager initialized")
         

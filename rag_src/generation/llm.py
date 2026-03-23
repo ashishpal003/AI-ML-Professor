@@ -4,6 +4,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from rag_src.utils.exceptions import MyException
 from rag_src.utils.logger import get_logger
 import sys
+import asyncio
 
 logger = get_logger(__name__)
 
@@ -41,13 +42,17 @@ class LLMService:
         try:
             logger.info("Invoking ChatOllama")
 
-            response = await self.llm.ainvoke(messages)
+            response = asyncio.wait_for(self.llm.ainvoke(messages), timeout=30)
 
             if not response or not response.content:
                 raise ValueError("Emplty response from LLM")
             
             return response.content
         
+        except asyncio.TimeoutError:
+            logger.error("LLM timeout")
+            return "Sorry, the model is taking too long. Please try again."
+    
         except Exception as e:
             logger.error(f"LLM generation failed: {e}")
             raise MyException(e, sys)

@@ -5,24 +5,26 @@ from langchain_core.documents import Document
 from rag_src.utils.logger import get_logger
 from rag_src.utils.exceptions import MyException
 import sys
+import json
 
 logger = get_logger(__name__)
 
 class RetrievalCache:
     
-    def __init__(self):
-        self.cache = {}
+    def __init__(self, redis_client):
+        self.redis = redis_client
 
     def _key(self, query: str) -> str:
-        return hashlib.md5(query.encode()).hexdigest()
+        return f"retrieval:{hashlib.md5(query.encode()).hexdigest()}"
     
-    def get(self, query: str) -> Optional[List[Document]]:
+    def get(self, query: str):
         try:
             key = self._key(query=query)
+            data = self.redis.get(key)
 
-            if key in self.cache:
+            if data:
                 logger.info("Retrieval cache HIT")
-                return self.cache[key]
+                return json.loads(data)
             
             logger.info("Retrieval cache MISS")
             return None
@@ -31,12 +33,16 @@ class RetrievalCache:
             logger.error(f"Retrieval cache get failed: {e}")
             raise MyException(e, sys)
         
-    def set(self, query: str, docs: List[Document]):
+    def set(self, query: str, docs):
         try:
             key = self._key(query=query)
-            self.cache[key] = docs
+            
+            serialized = json.dumps([
+                {"page_content": d.page_content, "metadata": d.metadata}
+                for d in docs
+            ])
 
-            logger.info("Retrieval cache updated")
+            self.redis.set(key, serialized, ex=600) ## TTL = 30 minutes
 
         except Exception as e:
             logger.error(f"Retrieval cache set failed: {e}")

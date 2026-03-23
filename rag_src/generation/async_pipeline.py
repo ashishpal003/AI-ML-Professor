@@ -3,6 +3,7 @@ from rag_src.retrieval.pipeline import RetrievalPipeline
 from rag_src.generation.llm import LLMService
 from rag_src.generation.prompt_builder import PromptBuilder
 from rag_src.generation.memory import ConversationMemory
+from rag_src.generation.memory_store import MemoryStore
 
 from rag_src.evaluation.deepeval_evaluator import DeepEvalEvaluator
 from deepeval.models import OllamaModel
@@ -33,7 +34,7 @@ class AsyncRAGPipeline:
         self.retrieval_pipeline = RetrievalPipeline(self.settings)
         self.llm = LLMService(model_name=self.settings.CHAT_MODEL)
         self.prompt_builder = PromptBuilder()
-        self.memory = ConversationMemory()
+        self.memory_store = MemoryStore()
         self.cache = CacheManager(settings=self.settings)
 
         ## set Ollama model with DeepEvals base class
@@ -42,14 +43,16 @@ class AsyncRAGPipeline:
 
     # Retry wrapper
     async def _safe_llm_call(self, messages):
-        for attempt in range(2):
+        delay = 1
+        for attempt in range(3):
             try:
                 return await self.llm.agenerate(messages)
             except Exception as e:
                 logger.warning(f"LLM attempt {attempt+1} failed: {e}")
-                if attempt == 1:
+                if attempt == 2:
                     raise
-                await asyncio.sleep(1)
+                await asyncio.sleep(delay)
+                delay *=2
 
     # Background evaluation
     async def _run_evaluation(self, query: str, response: str, context: str):
@@ -67,7 +70,7 @@ class AsyncRAGPipeline:
             logger.error(f"Async evaluation failed: {e}")
 
     # Async Pipeline
-    async def run(self, query: str) -> str:
+    async def run(self, query: str, session_id: str) -> str:
 
         logger.info("Starting async conversational RAG pipeline")
 
@@ -75,6 +78,8 @@ class AsyncRAGPipeline:
             with MLFlowTracker("rag_generation_chat") as tracker:
 
                 start_time = time.time()
+
+                memory = self.memory_store.get_memory(session_id)
 
                 # semantic cache
                 semantic_hit = self.cache.get_semantic(query=query)
@@ -108,7 +113,7 @@ class AsyncRAGPipeline:
                 Diagnostics.log_context_stats(context)
 
                 # history
-                history = self.memory.get_history()
+                history = memory.get_history()
 
                 # prompt
                 messages = self.prompt_builder.build(
@@ -118,7 +123,7 @@ class AsyncRAGPipeline:
                 )
 
                 # LLM
-                response = await self.llm.agenerate(messages)
+                response = await self._safe_llm_call(messages)
 
                 Diagnostics.log_response_stats(response)
 
@@ -133,7 +138,7 @@ class AsyncRAGPipeline:
                 else:
                     logger.info("Skipping evaluation (sampling)")
 
-                self.memory.add(query=query, response=response)
+                memory.add(query=query, response=response)
 
                 latency = time.time() - start_time
 
@@ -159,10 +164,12 @@ class AsyncRAGPipeline:
             logger.critical(f"Async RAG pipeline failed: {e}", exc_info=True)
             raise MyException(e, sys)
         
-    async def stream(self, query: str):
+    async def stream(self, query: str, session_id: str):
         logger.info("Starting STREAMING RAG pipeline")
 
         try:
+            memory = self.memory_store.get_memory(session_id)
+
             # semantic cache
             semantic_hit = self.cache.get_semantic(query=query)
             if semantic_hit:
@@ -185,7 +192,7 @@ class AsyncRAGPipeline:
             )
 
             # history
-            history = self.memory.get_history()
+            history = memory.get_history()
 
             # prompt
             messages = self.prompt_builder.build(
@@ -215,7 +222,7 @@ class AsyncRAGPipeline:
             )
 
             # memory update
-            self.memory.add(query=query, response=full_response)
+            memory.add(query=query, response=full_response)
         
         except Exception as e:
             logger.error(f"Streaming failed: {e}")

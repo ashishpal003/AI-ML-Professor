@@ -18,11 +18,12 @@ rag_pipline = AsyncRAGPipeline(settings)
 
 class QueryRequest(BaseModel):
     query: str
+    session_id: str
 
 # non streaming endpoint for testing
 @app.post("/query")
 async def query_rag(request: QueryRequest):
-    response = await rag_pipline.run(request.query)
+    response = await rag_pipline.run(request.query, request.session_id)
     return {"response": response}
 
 # Streaming Endpoint (Main Feature)
@@ -31,7 +32,7 @@ async def stream_rag(request: QueryRequest):
 
     async def event_generator():
         try:
-            async for chunk in rag_pipline.stream(request.query):
+            async for chunk in rag_pipline.stream(request.query, request.session_id):
 
                 # Handle LangChain chunk objects if needed
                 if hasattr(chunk, "content"):
@@ -48,5 +49,14 @@ async def stream_rag(request: QueryRequest):
 
     return StreamingResponse(
         event_generator(),
-        media_type="text/plain"
+        media_type="text/event-stream"
     )
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+@app.post("/clear-cache")
+def clear_cache():
+    rag_pipline.cache.redis.client.flushdb()
+    return {"message": "Cache cleared"}
