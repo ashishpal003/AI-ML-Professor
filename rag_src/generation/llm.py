@@ -42,7 +42,7 @@ class LLMService:
         try:
             logger.info("Invoking ChatOllama")
 
-            response = asyncio.wait_for(self.llm.ainvoke(messages), timeout=30)
+            response = await asyncio.wait_for(self.llm.ainvoke(messages), timeout=30)
 
             if not response or not response.content:
                 raise ValueError("Emplty response from LLM")
@@ -57,7 +57,7 @@ class LLMService:
             logger.error(f"LLM generation failed: {e}")
             raise MyException(e, sys)
         
-    async def astream(self, messages: str):
+    async def astream(self, messages: list):
         """
         Stream tokens from LLM
         """

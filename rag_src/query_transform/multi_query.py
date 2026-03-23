@@ -1,0 +1,29 @@
+from rag_src.generation.llm import LLMService
+from langchain_core.messages import HumanMessage
+from rag_src.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
+class MultiQueryGenerator:
+
+    def __init__(self, model_name: str):
+        self.llm = LLMService(model_name=model_name)
+
+    async def generate(self, query: str):
+        prompt = f"""
+Generate 3 different rephrasings of this query for better document retrieval.
+Please provide a list of rephrased query and do not add any comments or description.
+
+Query: {query}
+
+Return as a list.
+"""
+        try:
+            response = await self.llm.agenerate([HumanMessage(content=prompt)])
+
+            queries = [q.strip("- ").strip() for q in response.split("\n") if q.strip()]
+
+            logger.info(f"List of queries: {queries}")
+            return list(set(queries))[:3]
+        except Exception:
+            return [query]

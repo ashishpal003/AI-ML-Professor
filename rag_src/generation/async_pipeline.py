@@ -12,6 +12,9 @@ from rag_src.cofig.setting import Settings
 
 from rag_src.caching.cache_manager import CacheManager
 
+from rag_src.query_transform.rewriter import QueryRewriter
+from rag_src.query_transform.multi_query import MultiQueryGenerator
+
 from rag_src.utils.logger import get_logger
 from rag_src.utils.exceptions import MyException
 from rag_src.utils.retry import retry
@@ -40,6 +43,8 @@ class AsyncRAGPipeline:
         ## set Ollama model with DeepEvals base class
         llm = OllamaModel(self.settings.CHAT_MODEL)
         self.evaluator = DeepEvalEvaluator(llm=llm)
+        self.rewriter = QueryRewriter(self.settings.CHAT_MODEL)
+        self.multi_query = MultiQueryGenerator(self.settings.CHAT_MODEL)
 
     # Retry wrapper
     async def _safe_llm_call(self, messages):
@@ -176,17 +181,44 @@ class AsyncRAGPipeline:
                 yield semantic_hit
                 return
             
-            # retrieval cache
-            docs = self.cache.get_retrieval(query=query)
+            # query rewrite 
+            rewritten_query = await self.rewriter.rewrite(query=query)
+
+            if not rewritten_query:
+                rewritten_query = query
+
+            # retrieval cache - base on rewritten query
+            docs = self.cache.get_retrieval(query=rewritten_query)
 
             if not docs:
-                docs = await asyncio.to_thread(
-                    self.retrieval_pipeline.run,
-                    query
-                )
-                self.cache.set_retrieval(query, docs)
 
-            # context
+                # multi query
+                queries = await self.multi_query.generate(rewritten_query)
+
+                # parallel retrieval
+                tasks = [
+                    asyncio.to_thread(self.retrieval_pipeline.run, q)
+                    for q in queries
+                ]
+
+                results = await asyncio.gather(*tasks)
+
+                # flatten
+                all_docs = [doc for sublist in results for doc in sublist]
+
+                # deduplicate
+                unique_docs = list({d.page_content: d for d in all_docs}.values())
+
+                # final reranking
+                docs = self.retrieval_pipeline.reranker.rerank(
+                    rewritten_query,
+                    unique_docs
+                )
+
+                # retrieval cache - set
+                self.cache.set_retrieval(rewritten_query, docs)
+
+            # build context
             context = "\n\n".join(
                 [d.page_content for d in docs[:3] if d.page_content]
             )
@@ -194,7 +226,7 @@ class AsyncRAGPipeline:
             # history
             history = memory.get_history()
 
-            # prompt
+            # build prompt
             messages = self.prompt_builder.build(
                 query=query,
                 context=context,
@@ -215,14 +247,14 @@ class AsyncRAGPipeline:
 
             # cache
             self.cache.set_semantic(query, full_response)
+            
+            # memory update
+            memory.add(query=query, response=full_response)
 
             # async evaluation
             asyncio.create_task(
                 self._run_evaluation(query, full_response, context)
-            )
-
-            # memory update
-            memory.add(query=query, response=full_response)
+            )            
         
         except Exception as e:
             logger.error(f"Streaming failed: {e}")
