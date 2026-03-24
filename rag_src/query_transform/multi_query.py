@@ -12,11 +12,13 @@ class MultiQueryGenerator:
     async def generate(self, query: str):
         prompt = f"""
 Generate 3 different rephrasings of this query for better document retrieval.
-Please provide a list of rephrased query and do not add any comments or description.
+Please provide a just a list of rephrased query and nothing extra.
+Also please dont add sentences like 'Here are three rephrasings of the query for better document retrieval:' or any thing similar with in the list"
 
-Query: {query}
+Query:
+{query}
 
-Return as a list.
+list:
 """
         try:
             response = await self.llm.agenerate([HumanMessage(content=prompt)])

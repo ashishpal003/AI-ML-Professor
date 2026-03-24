@@ -29,11 +29,19 @@ class Reranker:
                 reverse=True
             )
 
-            rerranked_docs = [doc for doc, _ in ranked]
+            # rerranked_docs = [doc for doc, _ in ranked]
+
+            reranked_docs = [
+                {
+                    "doc": doc,
+                    "score": float(score)
+                }
+                for doc, score in ranked
+            ]
 
             logger.info("Reranking completed")
 
-            return rerranked_docs
+            return reranked_docs
         
         except Exception as e:
             logger.error(f"Reranking failed: {e}")

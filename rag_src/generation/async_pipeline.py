@@ -1,4 +1,5 @@
 from rag_src.retrieval.pipeline import RetrievalPipeline
+from rag_src.retrieval.confidence import compute_confidence
 
 from rag_src.generation.llm import LLMService
 from rag_src.generation.prompt_builder import PromptBuilder
@@ -202,18 +203,25 @@ class AsyncRAGPipeline:
                 ]
 
                 results = await asyncio.gather(*tasks)
+                logger.info(f"This needs to be tested: {results}")
 
                 # flatten
-                all_docs = [doc for sublist in results for doc in sublist]
+                all_docs = [dic['doc'] for sublist in results for dic in sublist]
 
                 # deduplicate
                 unique_docs = list({d.page_content: d for d in all_docs}.values())
+                logger.info(f"This needs to be tested 2: {unique_docs}")
 
                 # final reranking
-                docs = self.retrieval_pipeline.reranker.rerank(
+                reranked = self.retrieval_pipeline.reranker.rerank(
                     rewritten_query,
                     unique_docs
                 )
+
+                confidence = compute_confidence(reranked_docs=reranked)
+                logger.info(f"Retrieval confidence: {confidence:.3f}")
+                
+                docs = [d['doc'] for d in reranked]
 
                 # retrieval cache - set
                 self.cache.set_retrieval(rewritten_query, docs)
@@ -235,15 +243,29 @@ class AsyncRAGPipeline:
 
             # stream response
             full_response = ""
+            if confidence < 0.3:
+                    logger.warning("Low retrieval confidence")
+                    yield "I dont have enough reliable information to answer this question"
 
-            async for chunk in self.llm.astream(messages):
-                if hasattr(chunk, "content"):
-                    token = chunk.content
-                else:
-                    token = str(chunk)
-                
-                full_response += token
-                yield token
+            elif confidence < 0.5:
+                yield f"⚠️ This answer may be uncertain:\n\n"
+                async for chunk in self.llm.astream(messages):
+                    if hasattr(chunk, "content"):
+                        token = chunk.content
+                    else:
+                        token = str(chunk)
+                    
+                    full_response += token
+                    yield token
+            else:
+                async for chunk in self.llm.astream(messages):
+                    if hasattr(chunk, "content"):
+                        token = chunk.content
+                    else:
+                        token = str(chunk)
+                    
+                    full_response += token
+                    yield token
 
             # cache
             self.cache.set_semantic(query, full_response)
