@@ -65,12 +65,10 @@ def clear_cache():
     return {"message": "Cache cleared"}
 
 @app.post("/upload")
-async def upload_file(file: UploadFile):
+async def upload_file(file: UploadFile = File(...)):
     try:
         content = await file.read()
-
         result = upload_pipeline.run(content, file.filename)
-
         return {
             "message": "File uploaded successfully",
             "details": result

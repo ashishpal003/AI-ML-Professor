@@ -22,10 +22,9 @@ class UploadPipeline:
         
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
             tmp.write(file_bytes)
-            temp_path = tmp.name
-
-        loader = PyMuPDFLoader(temp_path)
-        docs = loader.load()
+            tmp.flush
+            loader = PyMuPDFLoader(tmp.name)
+            docs = loader.load()
 
         chunks = self.splitter.split(docs)
 
@@ -33,8 +32,6 @@ class UploadPipeline:
             documents=chunks,
             path=self.settings.VECTOR_DB_PATH
         )
-
-        os.remove(temp_path)
 
         return {
             "filename": filename,

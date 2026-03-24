@@ -176,23 +176,22 @@ class AsyncRAGPipeline:
         try:
             memory = self.memory_store.get_memory(session_id)
 
-            # semantic cache
+            # 1. semantic cache
             semantic_hit = self.cache.get_semantic(query=query)
             if semantic_hit:
                 yield semantic_hit
                 return
             
-            # query rewrite 
+            # 2. query rewrite 
             rewritten_query = await self.rewriter.rewrite(query=query)
-
             if not rewritten_query:
                 rewritten_query = query
 
-            # retrieval cache - base on rewritten query
+            # 3. retrieval cache - base on rewritten query
             docs = self.cache.get_retrieval(query=rewritten_query)
+            confidence = 1.0 # default for cache hit
 
             if not docs:
-
                 # multi query
                 queries = await self.multi_query.generate(rewritten_query)
 
@@ -201,7 +200,6 @@ class AsyncRAGPipeline:
                     asyncio.to_thread(self.retrieval_pipeline.run, q)
                     for q in queries
                 ]
-
                 results = await asyncio.gather(*tasks)
                 logger.info(f"This needs to be tested: {results}")
 
@@ -226,51 +224,43 @@ class AsyncRAGPipeline:
                 # retrieval cache - set
                 self.cache.set_retrieval(rewritten_query, docs)
 
-            # build context
+            # 4. build context
             context = "\n\n".join(
                 [d.page_content for d in docs[:3] if d.page_content]
             )
-
-            # history
-            history = memory.get_history()
 
             # build prompt
             messages = self.prompt_builder.build(
                 query=query,
                 context=context,
-                history=history
+                history=memory.get_history()
             )
 
-            # stream response
             full_response = ""
+
+            # 5. guardrails
             if confidence < 0.3:
                     logger.warning("Low retrieval confidence")
                     yield "I dont have enough reliable information to answer this question"
+                    return
 
             elif confidence < 0.5:
                 yield f"⚠️ This answer may be uncertain:\n\n"
-                async for chunk in self.llm.astream(messages):
-                    if hasattr(chunk, "content"):
-                        token = chunk.content
-                    else:
-                        token = str(chunk)
-                    
-                    full_response += token
-                    yield token
-            else:
-                async for chunk in self.llm.astream(messages):
-                    if hasattr(chunk, "content"):
-                        token = chunk.content
-                    else:
-                        token = str(chunk)
-                    
-                    full_response += token
-                    yield token
+            
+            # 6. stream LLM
+            async for chunk in self.llm.astream(messages):
+                if hasattr(chunk, "content"):
+                    token = chunk.content
+                else:
+                    token = str(chunk)
+                
+                full_response += token
+                yield token
 
-            # cache
+            # 7. set semantic cache
             self.cache.set_semantic(query, full_response)
             
-            # memory update
+            # 8. chat memory update
             memory.add(query=query, response=full_response)
 
             # async evaluation

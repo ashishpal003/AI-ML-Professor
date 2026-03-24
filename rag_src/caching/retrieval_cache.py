@@ -24,7 +24,10 @@ class RetrievalCache:
 
             if data:
                 logger.info("Retrieval cache HIT")
-                return json.loads(data)
+                return [
+                    Document(page_content=d["page_content"], metadata=d["metadata"])
+                    for d in json.loads(data)
+                ]
             
             logger.info("Retrieval cache MISS")
             return None

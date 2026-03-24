@@ -1,6 +1,5 @@
 from rag_src.caching.semantic_cache import SemanticCache
 from rag_src.caching.retrieval_cache import RetrievalCache
-
 from rag_src.caching.redis_client import RedisClient
 
 from rag_src.cofig.setting import Settings
@@ -15,11 +14,14 @@ class CacheManager:
     def __init__(self, settings: Settings):
         try:
             self.settings = settings
-            self.semantic_cache = SemanticCache(model_name=self.settings.EMBEDDINGS_MODEL, threshold=self.settings.SEMANTIC_THRESHOLD)
+            self.semantic_cache = SemanticCache(
+                model_name=self.settings.EMBEDDINGS_MODEL,
+                threshold=self.settings.SEMANTIC_THRESHOLD
+            )
             # self.retrieval_cahce = RetrievalCache()
 
             self.redis = RedisClient()
-            self.retrieval_cahce = RetrievalCache(self.redis)
+            self.retrieval_cache = RetrievalCache(self.redis)
 
             logger.info("CacheManager initialized")
         
@@ -35,7 +37,7 @@ class CacheManager:
 
     # retrieval cache
     def get_retrieval(self, query: str):
-        return self.retrieval_cahce.get(query=query)
+        return self.retrieval_cache.get(query=query)
     
     def set_retrieval(self, query: str, docs):
-        self.retrieval_cahce.set(query, docs)
+        self.retrieval_cache.set(query, docs)

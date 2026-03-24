@@ -20,14 +20,16 @@ def get_logger(name: str):
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
 
-    if not logger.handlers:
-        handler = RotatingFileHandler(filename=log_file_path, maxBytes=MAX_LOG_SIZE, backupCount=BACKUP_COUNT)
+    if logger.handlers:
+        return logger
+    
+    handler = RotatingFileHandler(filename=log_file_path, maxBytes=MAX_LOG_SIZE, backupCount=BACKUP_COUNT)
 
-        formatter = logging.Formatter("[ %(asctime)s ] %(name)s - %(levelname)s - %(message)s")
+    formatter = logging.Formatter("[ %(asctime)s ] %(name)s - %(levelname)s - %(message)s")
 
-        handler.setFormatter(formatter)
+    handler.setFormatter(formatter)
 
-        logger.addHandler(handler)
+    logger.addHandler(handler)
     
     return logger
 

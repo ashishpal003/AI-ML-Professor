@@ -23,20 +23,20 @@ class LLMService:
             logger.error(f"LLM initialization failed: {e}")
             raise MyException(e, sys)
         
-    def generate(self, messages: list) -> str:
-        try:
-            logger.info("Invoking ChatOllama")
+    # def generate(self, messages: list) -> str:
+    #     try:
+    #         logger.info("Invoking ChatOllama")
 
-            response = self.llm.invoke(messages)
+    #         response = self.llm.invoke(messages)
 
-            if not response or not response.content:
-                raise ValueError("Emplty response from LLM")
+    #         if not response or not response.content:
+    #             raise ValueError("Emplty response from LLM")
             
-            return response.content
+    #         return response.content
         
-        except Exception as e:
-            logger.error(f"LLM generation failed: {e}")
-            raise MyException(e, sys)
+    #     except Exception as e:
+    #         logger.error(f"LLM generation failed: {e}")
+    #         raise MyException(e, sys)
         
     async def agenerate(self, messages: list) -> str:
         try:
