@@ -33,6 +33,8 @@ class RetrievalPipeline:
             with MLFlowTracker(experiment_name="rag_retrieval") as tracker:
 
                 start_time = time.time()
+                self.vectorstore = self.loader.load()
+                self.retriever.vectorstore = self.vectorstore
 
                 docs = self.retriever.retriever(query=query)
                 reranked_docs = self.reranker.rerank(query, docs)

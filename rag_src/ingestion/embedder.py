@@ -45,5 +45,29 @@ class VectorStoreBuilder:
         except Exception as e:
             logger.error(f"Saving vectorstore failed: {e}")
             raise MyException(e, sys)
+        
+    def load_or_create(self, path: str):
+        if os.path.exists(path):
+            return FAISS.load_local(
+                path,
+                self.embedding,
+                allow_dangerous_deserialization=True
+            )
+        return None
+    
+    def add_documents(self, documents, path: str):
+        try:
+            db = self.load_or_create(path)
 
+            if db:
+                logger.info("Updating existng vectorstore")
+                db.add_documents(documents)
+            else:
+                logger.info("Creating new vectorstore")
+                db = FAISS.from_documents(documents, self.embedding)
             
+            db.save_local(path)
+            return db
+        
+        except Exception as e:
+            raise MyException(e, sys)

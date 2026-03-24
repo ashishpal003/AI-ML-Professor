@@ -14,5 +14,6 @@ deepeval
 fastapi
 streamlit
 redis
+python-multipart
 
 # -e .

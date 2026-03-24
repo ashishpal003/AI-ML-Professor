@@ -19,7 +19,9 @@ Guidelines:
 - Explain concepts clearly and step-by-step
 - Use examples when helpful
 - Be concise but insightful
-- If answer is not in context, say "I don't know"
+- ONLY answer from the context
+- If answer is not explicitly present, say "I don't know"
+- Do NOT infer or guess
 
 Use the context below to answer.
 

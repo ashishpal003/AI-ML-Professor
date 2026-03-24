@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from fastapi import UploadFile, File
+from rag_src.ingestion.upload_pipeline import UploadPipeline
 
 import asyncio
 
@@ -15,6 +17,7 @@ app = FastAPI(title="AI-ML Professor")
 ## Initialize pipeline
 settings = Settings()
 rag_pipline = AsyncRAGPipeline(settings)
+upload_pipeline = UploadPipeline(settings)
 
 class QueryRequest(BaseModel):
     query: str
@@ -60,3 +63,18 @@ def health():
 def clear_cache():
     rag_pipline.cache.redis.client.flushdb()
     return {"message": "Cache cleared"}
+
+@app.post("/upload")
+async def upload_file(file: UploadFile):
+    try:
+        content = await file.read()
+
+        result = upload_pipeline.run(content, file.filename)
+
+        return {
+            "message": "File uploaded successfully",
+            "details": result
+        }
+    
+    except Exception as e:
+        return {"error": str(e)}
