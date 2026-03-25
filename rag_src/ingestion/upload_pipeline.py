@@ -28,7 +28,7 @@ class UploadPipeline:
 
         chunks = self.splitter.split(docs)
 
-        self.embedder.add_documents(
+        self.embedder.upsert(
             documents=chunks,
             path=self.settings.VECTOR_DB_PATH
         )

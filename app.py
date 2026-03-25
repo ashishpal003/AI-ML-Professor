@@ -41,10 +41,10 @@ async def stream_rag(request: QueryRequest):
                 if hasattr(chunk, "content"):
                     chunk = chunk.content
 
-                yield chunk
+                yield chunk.encode("utf-8")
 
                 # Optional: small delay added
-                await asyncio.sleep(0.02)
+                await asyncio.sleep(0.01)
 
         except Exception as e:
             logger.error(f"Streaming endpoint error: {e}")
@@ -68,7 +68,7 @@ def clear_cache():
 async def upload_file(file: UploadFile = File(...)):
     try:
         content = await file.read()
-        result = upload_pipeline.run(content, file.filename)
+        result = await asyncio.to_thread(upload_pipeline.run, content, file.filename)
         return {
             "message": "File uploaded successfully",
             "details": result

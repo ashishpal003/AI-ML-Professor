@@ -3,10 +3,10 @@ from pathlib import Path
 class Settings:
     PDF_DIR = "data"
 
-    CHUNK_SIZE = 500
-    CHUNK_OVERLAP = 100
+    CHUNK_SIZE = 800
+    CHUNK_OVERLAP = 150
     MIN_CHUNK_LENGTH = 50
-    K = 5
+    K = 8
     CACHE_TTL = 600
 
     EMBEDDINGS_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
@@ -14,7 +14,7 @@ class Settings:
     RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
     
     CHAT_MODEL = "llama3:8b"
-    TEMEPERATURE = 0.2
+    TEMEPERATURE = 0.8
 
     VECTOR_DB_PATH = "vectorstore/faiss_store"
 

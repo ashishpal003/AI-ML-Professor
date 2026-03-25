@@ -10,7 +10,7 @@ logger = get_logger(__name__)
 
 class LLMService:
 
-    def __init__(self, model_name="llama3", temperature=0.2):
+    def __init__(self, model_name="llama3", temperature=0.8):
         try:
             logger.info(f"Initialize ChatOllam: {model_name}")
 

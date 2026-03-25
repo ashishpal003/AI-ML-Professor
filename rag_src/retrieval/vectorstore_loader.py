@@ -25,7 +25,8 @@ class VectorStoreLoader:
     def load(self):
         try:
             if not os.path.exists(self.db_path):
-                raise FileNotFoundError("Vector DB is not found")
+                logger.warning("Vector DB is not found. Returning None.")
+                return None
             
             logger.info(f"Loading FAISS index from {self.db_path}")
 

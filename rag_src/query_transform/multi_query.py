@@ -26,6 +26,6 @@ list:
             queries = [q.strip("- ").strip() for q in response.split("\n") if q.strip()]
 
             logger.info(f"List of queries: {queries}")
-            return list(set(queries))[:3]
+            return list(set(queries))[:5]
         except Exception:
             return [query]

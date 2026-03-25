@@ -209,6 +209,9 @@ class AsyncRAGPipeline:
                 # deduplicate
                 unique_docs = list({d.page_content: d for d in all_docs}.values())
                 logger.info(f"This needs to be tested 2: {unique_docs}")
+                if not unique_docs:
+                    yield "No document found! Please upload one."
+                    return
 
                 # final reranking
                 reranked = self.retrieval_pipeline.reranker.rerank(
@@ -226,7 +229,7 @@ class AsyncRAGPipeline:
 
             # 4. build context
             context = "\n\n".join(
-                [d.page_content for d in docs[:3] if d.page_content]
+                [d.page_content for d in docs[:5] if d.page_content]
             )
 
             # build prompt

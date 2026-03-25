@@ -12,10 +12,11 @@ class QueryRewriter:
 
     async def rewrite(self, query: str) -> str:
         prompt = f"""
-Rewrite the following query to make it more specific and retrieval-friendly.
-Please do as asked in the format provided and do not add any description about the rewritten query.
+Rewrite the following query to make it a bit more specific and retrieval-friendly.
+Make sure the rewritten query does not change in its meaning.
+Please do not add any extra topic or keywords from your end.
 
-Original Query:
+Qriginal Query:
 {query}
 
 Rewritten Query:

@@ -34,6 +34,12 @@ class RetrievalPipeline:
 
                 start_time = time.time()
                 self.vectorstore = self.loader.load()
+                if self.vectorstore is None:
+                    logger.warning("Vectorstore is empty. Retrieval disabled.")
+
+                if self.vectorstore is None:
+                    return []
+
                 self.retriever.vectorstore = self.vectorstore
 
                 docs = self.retriever.retriever(query=query)
