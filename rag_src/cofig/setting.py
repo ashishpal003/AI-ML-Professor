@@ -14,7 +14,7 @@ class Settings:
     RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
     
     CHAT_MODEL = "llama3:8b"
-    TEMEPERATURE = 0.8
+    TEMEPERATURE = 0.2
 
     VECTOR_DB_PATH = "vectorstore/faiss_store"
 

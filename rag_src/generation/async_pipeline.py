@@ -113,7 +113,7 @@ class AsyncRAGPipeline:
 
                 # context
                 context = "\n\n".join(
-                    [d.page_content for d in docs[:3] if d.page_content]
+                    [d.page_content for d in docs[:5] if d.page_content]
                 )
 
                 Diagnostics.log_context_stats(context)
@@ -127,6 +127,7 @@ class AsyncRAGPipeline:
                     context=context,
                     history=history
                 )
+                logger.info(f"Prompt: {messages}")
 
                 # LLM
                 response = await self._safe_llm_call(messages)
@@ -201,14 +202,15 @@ class AsyncRAGPipeline:
                     for q in queries
                 ]
                 results = await asyncio.gather(*tasks)
-                logger.info(f"This needs to be tested: {results}")
+                # logger.info(f"This needs to be tested: {results}")
 
                 # flatten
                 all_docs = [dic['doc'] for sublist in results for dic in sublist]
 
                 # deduplicate
                 unique_docs = list({d.page_content: d for d in all_docs}.values())
-                logger.info(f"This needs to be tested 2: {unique_docs}")
+                # logger.info(f"This needs to be tested 2: {unique_docs}")
+
                 if not unique_docs:
                     yield "No document found! Please upload one."
                     return
@@ -238,6 +240,7 @@ class AsyncRAGPipeline:
                 context=context,
                 history=memory.get_history()
             )
+            # logger.info(f"Prompt: {messages}")
 
             full_response = ""
 

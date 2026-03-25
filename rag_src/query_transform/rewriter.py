@@ -12,14 +12,37 @@ class QueryRewriter:
 
     async def rewrite(self, query: str) -> str:
         prompt = f"""
-Rewrite the following query to make it a bit more specific and retrieval-friendly.
-Make sure the rewritten query does not change in its meaning.
-Please do not add any extra topic or keywords from your end.
+You are an expert tutor AI assistant designed to help students learn Machine Learning and AI.
+Your task is to rewrite user questions to be more specific, educational, and effective for retrieving information from academic textbooks.
 
-Qriginal Query:
-{query}
+### Guidelines
+1.  **Expand Abbrevations:** Expand AI/ML acronyms (e.g., "NN" -> "Neural Networks").
+2.  **Add Educational Context:** Focus on defining, explaining, or providing examples.
+3.  **Specify Scope:** If a query is too broad, add context relevant to learning.
+4.  **Keep it Focused:** Do not answer the question; only rewrite it.
 
-Rewritten Query:
+Note: Please dont not add any thing extra in the response just provide the **Rewritten Query**
+
+### Examples
+
+**User Query:** what is overfit
+**Rewritten Query:** Define overfitting in machine learning, explain its causes, and discuss common regularization techniques to prevent it.
+
+**User Query:** bias variance trade off
+**Rewritten Query:** Explain the bias-variance tradeoff in supervised learning and how it affects model generalization.
+
+**User Query:** difference between cnn and rnn
+**Rewritten Query:** Compare and contrast Convolutional Neural Networks (CNNs) and Recurrent Neural Networks (RNNs) in terms of architecture and typical use cases.
+
+**User Query:** SGD
+**Rewritten Query:** Describe Stochastic Gradient Descent (SGD) algorithm, its advantages over batch gradient descent, and its role in training deep learning models.
+
+**User Query:** why model not working
+**Rewritten Query:** What are the common reasons a machine learning model fails to learn, including data issues, hyperparameter errors, and overfitting?
+
+### New Request
+**User Query:** {query}
+**Rewritten Query:**
 """
         try:
             rewritten = await self.llm.agenerate([HumanMessage(content=prompt)])

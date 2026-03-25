@@ -15,6 +15,16 @@ Generate 3 different rephrasings of this query for better document retrieval.
 Please provide a just a list of rephrased query and nothing extra.
 Also please dont add sentences like 'Here are three rephrasings of the query for better document retrieval:' or any thing similar with in the list"
 
+### Example
+Query:
+Define Machine Learning (ML) as a subfield of Artificial Intelligence (AI), explaining its core concepts, goals, and applications in areas such as computer vision, natural language processing, and predictive analytics.
+
+list:
+- What are the fundamental principles and objectives of machine learning within the broader context of artificial intelligence?
+- Explain the key ideas, purposes, and uses of machine learning in disciplines like computer vision, natural language processing, and predictive modeling.
+- Describe the core concepts, aims, and areas of application for machine learning as a subfield of artificial intelligence.
+
+## New query
 Query:
 {query}
 
