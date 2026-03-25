@@ -1,7 +1,7 @@
 FROM python:3.12-slim
 
-# Avoid Python buffering
-ENV PYTHONUNBUFFERED=1
+# set working dir
+WORKDIR /app
 
 # System deps
 RUN apt-get update && apt-get install -y \
@@ -10,16 +10,15 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# set working dir
-WORKDIR /app
-
 # Copy project
 COPY . .
 
-# Install Python deps
-RUN pip install -no-cache-dir -r requirements.txt
-
-RUN mkdir -p vectorstore logs
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose FASTAPI port
 EXPOSE 8000
+EXPOSE 8501
+
+CMD ["bash"]

@@ -194,7 +194,7 @@ class AsyncRAGPipeline:
 
             if not docs:
                 # multi query
-                queries = await self.multi_query.generate(rewritten_query)
+                queries = [rewritten_query] + await self.multi_query.generate(rewritten_query)
 
                 # parallel retrieval
                 tasks = [
@@ -245,12 +245,12 @@ class AsyncRAGPipeline:
             full_response = ""
 
             # 5. guardrails
-            if confidence < 0.3:
+            if confidence < 0.2:
                     logger.warning("Low retrieval confidence")
                     yield "I dont have enough reliable information to answer this question"
                     return
 
-            elif confidence < 0.5:
+            elif confidence < 0.4:
                 yield f"⚠️ This answer may be uncertain:\n\n"
             
             # 6. stream LLM

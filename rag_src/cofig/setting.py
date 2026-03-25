@@ -11,7 +11,7 @@ class Settings:
 
     EMBEDDINGS_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
     
-    RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    RERANKER_MODEL = "BAAI/bge-reranker-base"
     
     CHAT_MODEL = "llama3:8b"
     TEMEPERATURE = 0.2

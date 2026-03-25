@@ -1,5 +1,8 @@
 # 📚 AI-ML Professor
 
+# Note:
+Please ignore Dockerfile and docker-compose.yml (this is not updated-working on it)
+
 A **production-ready Retrieval-Augmented Generation (RAG) system** that helps users learn Machine Learning and AI concepts using local PDF documents.
 
 Built with **FastAPI, LangChain, FAISS, Ollama, Streamlit**, and enhanced with:

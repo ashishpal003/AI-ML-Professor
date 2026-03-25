@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+
+  # Redis (Caching Layer)
+  redis:
+    image: redis:7
+    container_name: rag_redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  # FastAPI Backend
+  backend:
+    build: .
+    container_name: rag_backend
+    command: uvicorn app:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    volumes:
+      - .:/app
+    environment:
+      - REDIS_HOST=redis
+    restart: always
+
+  # Streamlit UI
+  frontend:
+    build: .
+    container_name: rag_streamlit
+    command: streamlit run streamlit_app.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+    volumes:
+      - .:/app
+    restart: always
