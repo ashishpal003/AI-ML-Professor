@@ -212,3 +212,4 @@ mlflow.db
 data/
 vectorstore/
 mlruns/
+Dockerfile
