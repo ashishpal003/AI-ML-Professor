@@ -99,7 +99,7 @@ requirements.txt
 ## 1️⃣ Clone Repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/ashishpal003/AI-ML-Professor.git
 cd AI-ML-Professor
 ```
 
@@ -373,7 +373,7 @@ file (not files)
 
 ---
 
-# 🔮 Future Improvements
+# 🔮 Future Improvements (Future Updates)
 
 * Hybrid retrieval (BM25 + FAISS)
 * Adaptive retrieval (dynamic K)
